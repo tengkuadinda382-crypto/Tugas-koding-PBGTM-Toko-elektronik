@@ -1,0 +1,183 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <iomanip>
+
+using namespace std;
+
+// Struct untuk menyimpan rincian item yang dibeli
+struct DetailBarang {
+    string nama;
+    long harga;
+    int jumlah;
+    long subtotal;
+};
+
+// Fungsi untuk mengambil tanggal & waktu sistem saat ini secara real-time
+string getWaktuSaatIni() {
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", ltm);
+    return string(buffer);
+}
+
+int main() {
+    int pilihan, jumlah;
+    char ulang;
+    long total_belanja = 0;
+    double persentase_diskon = 0;
+    long nominal_diskon = 0;
+    long total_akhir = 0;
+    long bayar = 0;
+    long kembalian = 0;
+
+    // Vector untuk menampung riwayat belanjaan
+    vector<DetailBarang> daftar_belanja;
+
+    // Daftar Master Produk
+    string nama_produk[] = {
+        "Mouse Gaming",
+        "Keyboard Mechanical",
+        "Flashdisk 32GB",
+        "Headset Bluetooth",
+        "Kabel HDMI"
+    };
+
+    long harga_produk[] = {75000, 150000, 50000, 120000, 30000};
+
+    // Tampilan Header Menu
+    cout << "==========================================" << endl;
+    cout << "         TOKO ELEKTRONIK ADINDA           " << endl;
+    cout << "==========================================" << endl;
+    cout << "Daftar Produk & Harga:" << endl;
+    
+    for (int i = 0; i < 5; i++) {
+        cout << i + 1 << ". " << left << setw(20) << nama_produk[i] 
+             << ": Rp " << harga_produk[i] << endl;
+    }
+    
+    cout << "==========================================" << endl;
+    cout << "* Promo Diskon Belanja:" << endl;
+    cout << "  - Belanja >= Rp 250.000 : Diskon 10%" << endl;
+    cout << "  - Belanja >= Rp 150.000 : Diskon 5%" << endl;
+    cout << "==========================================" << endl;
+
+    // Perulangan Transaksi Belanja
+    do {
+        cout << "\nPilih nomor barang (1-5): ";
+        cin >> pilihan;
+
+        if (pilihan >= 1 && pilihan <= 5) {
+            cout << "Masukkan jumlah item   : ";
+            cin >> jumlah;
+
+            int idx = pilihan - 1;
+            long sub = harga_produk[idx] * jumlah;
+            total_belanja += sub;
+
+            // Simpan ke vector
+            DetailBarang item;
+            item.nama = nama_produk[idx];
+            item.harga = harga_produk[idx];
+            item.jumlah = jumlah;
+            item.subtotal = sub;
+            daftar_belanja.push_back(item);
+
+            cout << ">> Dimasukkan: " << jumlah << "x " << nama_produk[idx] << endl;
+        } else {
+            cout << "Pilihan barang tidak valid!" << endl;
+        }
+
+        cout << "Tambah barang lain? (y/n): ";
+        cin >> ulang;
+
+    } while (ulang == 'y' || ulang == 'Y');
+
+    // Perhitungan Diskon berdasarkan total belanja
+    if (total_belanja >= 250000) {
+        persentase_diskon = 0.10;
+    } else if (total_belanja >= 150000) {
+        persentase_diskon = 0.05;
+    } else {
+        persentase_diskon = 0;
+    }
+
+    nominal_diskon = total_belanja * persentase_diskon;
+    total_akhir = total_belanja - nominal_diskon;
+
+    // Proses Pembayaran Tunai
+    cout << "\nTotal yang harus dibayar: Rp " << total_akhir << endl;
+    do {
+        cout << "Masukkan Uang Bayar     : Rp ";
+        cin >> bayar;
+
+        if (bayar < total_akhir) {
+            cout << "Uang pembayaran kurang Rp " << (total_akhir - bayar) 
+                 << " ! Silakan input ulang.\n" << endl;
+        }
+    } while (bayar < total_akhir);
+
+    kembalian = bayar - total_akhir;
+
+    // Tampilan Struk Pembayaran
+    cout << "\n\n";
+    cout << "==================================================" << endl;
+    cout << "             TOKO ELEKTRONIK ADINDA               " << endl;
+    cout << "     Jl. Setia Luhur No. 123, Medan, Sumut        " << endl;
+    cout << "==================================================" << endl;
+    cout << "Waktu   : " << getWaktuSaatIni() << endl;
+    cout << "Kasir   : Admin Toko" << endl;
+    cout << "--------------------------------------------------" << endl;
+    cout << left << setw(20) << "Item"
+         << setw(10) << "Harga"
+         << setw(8)  << "Qty"
+         << "Subtotal" << endl;
+    cout << "--------------------------------------------------" << endl;
+
+    // Cetak item yang dibeli dari vector
+    for (size_t i = 0; i < daftar_belanja.size(); i++) {
+        cout << left << setw(20) << daftar_belanja[i].nama
+             << setw(10) << daftar_belanja[i].harga
+             << setw(8)  << daftar_belanja[i].jumlah
+             << "Rp " << daftar_belanja[i].subtotal << endl;
+    }
+
+    cout << "--------------------------------------------------" << endl;
+    cout << left << setw(38) << "Total Belanja (Kotor)" << ": Rp " << total_belanja << endl;
+
+    if (nominal_diskon > 0) {
+        cout << left << setw(38) << ("Diskon (" + to_string((int)(persentase_diskon * 100)) + "%)") 
+             << ": Rp " << nominal_diskon << endl;
+    }
+
+    cout << left << setw(38) << "Total Bayar Akhir" << ": Rp " << total_akhir << endl;
+    cout << left << setw(38) << "Tunai / Bayar"     << ": Rp " << bayar << endl;
+    cout << left << setw(38) << "Kembali"           << ": Rp " << kembalian << endl;
+
+    // Bonus Hadiah jika pembelian di atas 1 juta
+    if (total_akhir > 1000000) {
+        cout << "--------------------------------------------------" << endl;
+        cout << "BONUS HADIAH: 1x Payung Exclusive Toko Adinda" << endl;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    cout << "==================================================" << endl;
+    cout << "       Terima Kasih Telah Berbelanja di Adinda!   " << endl;
+    cout << "        Barang yang dibeli tidak dapat ditukar    " << endl;
+    cout << "==================================================" << endl;
+
+    return 0;
+}
